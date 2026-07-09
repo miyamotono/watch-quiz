@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ウォッチ・アカデミー — 腕時計の教養クイズ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dial:#101725;
+    --dial-2:#17202F;
+    --card:#1B2536;
+    --line:#2B3648;
+    --gold:#C8A96E;
+    --gold-soft:#A98F5E;
+    --silver:#E9E7E1;
+    --muted:#8B95A5;
+    --correct:#7FB08A;
+    --wrong:#C07A7A;
+    --serif:'Shippori Mincho', serif;
+    --sans:'Zen Kaku Gothic New', sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(1200px 700px at 50% -10%, #1B2740 0%, var(--dial) 55%);
+    color:var(--silver);
+    font-family:var(--sans);
+    line-height:1.7;
+    display:flex;
+    justify-content:center;
+    padding:32px 16px 64px;
+  }
+  .app{width:100%;max-width:680px}
+
+  .brand{text-align:center;margin-bottom:28px}
+  .brand .eyebrow{font-size:11px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+  .brand h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,5vw,36px);letter-spacing:.08em}
+  .brand .sub{color:var(--muted);font-size:13px;margin-top:8px;letter-spacing:.08em}
+  .rule{width:120px;height:1px;margin:18px auto 0;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+  .screen{display:none;animation:fade .45s ease}
+  .screen.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .lead{color:var(--muted);font-size:14px;text-align:center;margin-bottom:26px}
+  .backlink{display:inline-block;color:var(--muted);font-size:12px;letter-spacing:.1em;margin-bottom:18px;cursor:pointer;background:none;border:none;font-family:var(--sans)}
+  .backlink:hover{color:var(--gold)}
+
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.cat-grid{grid-template-columns:1fr}}
+  .cat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px 18px;cursor:pointer;text-align:left;color:var(--silver);font-family:var(--sans);transition:border-color .2s, transform .15s}
+  .cat:hover{border-color:var(--gold-soft);transform:translateY(-2px)}
+  .cat:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .cat .cname{font-family:var(--serif);font-size:17px;letter-spacing:.06em;color:var(--gold)}
+  .cat .cdesc{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .cat .ccount{font-size:11px;color:var(--muted);margin-top:10px;letter-spacing:.15em}
+  .cat.mix{grid-column:1/-1;text-align:center;background:linear-gradient(180deg,#20304A,#1B2536)}
+  .cat.mix .cname{font-size:18px}
+
+  .diff-grid{display:grid;gap:12px}
+  .diff{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;cursor:pointer;text-align:left;color:var(--silver);font-family:var(--sans);display:flex;align-items:center;gap:16px;transition:border-color .2s, transform .15s}
+  .diff:hover{border-color:var(--gold-soft);transform:translateY(-2px)}
+  .diff:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .diff .dcrown{font-family:var(--serif);font-size:22px;color:var(--gold);width:34px;flex-shrink:0;text-align:center}
+  .diff .dname{font-family:var(--serif);font-size:16px;letter-spacing:.06em}
+  .diff .ddesc{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .diff .dcount{font-size:11px;color:var(--muted);margin-left:auto;letter-spacing:.1em;white-space:nowrap}
+
+  .hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:16px}
+  .hud .label{font-size:11px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase}
+  .hud .val{font-family:var(--serif);font-size:18px;color:var(--gold)}
+  .reserve{flex:1;height:6px;border-radius:3px;background:var(--card);border:1px solid var(--line);overflow:hidden;position:relative}
+  .reserve .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold-soft),var(--gold));transition:width .5s ease}
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px 26px}
+  .qcat{font-size:11px;letter-spacing:.3em;color:var(--gold);margin-bottom:12px;display:flex;gap:10px;align-items:center}
+  .qcat .lvl{color:var(--muted);letter-spacing:.15em}
+  .qtext{font-family:var(--serif);font-size:clamp(17px,3.4vw,20px);font-weight:600;letter-spacing:.03em;margin-bottom:22px}
+  .opts{display:grid;gap:10px}
+  .opt{background:var(--dial-2);border:1px solid var(--line);border-radius:8px;padding:14px 16px;text-align:left;color:var(--silver);font-family:var(--sans);font-size:15px;cursor:pointer;transition:border-color .15s, background .15s;display:flex;align-items:center;gap:12px}
+  .opt .key{font-family:var(--serif);color:var(--muted);font-size:13px;width:20px;flex-shrink:0}
+  .opt:hover:not(:disabled){border-color:var(--gold-soft)}
+  .opt:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .opt:disabled{cursor:default}
+  .opt.correct{border-color:var(--correct);background:rgba(127,176,138,.12)}
+  .opt.correct .key{color:var(--correct)}
+  .opt.wrong{border-color:var(--wrong);background:rgba(192,122,122,.12)}
+  .opt.dim{opacity:.45}
+
+  .explain{display:none;margin-top:20px;border-top:1px solid var(--line);padding-top:16px}
+  .explain.show{display:block;animation:fade .35s ease}
+  .verdict{font-family:var(--serif);font-size:15px;letter-spacing:.1em;margin-bottom:6px}
+  .verdict.ok{color:var(--correct)}
+  .verdict.ng{color:var(--wrong)}
+  .etext{font-size:13.5px;color:var(--muted)}
+  .nextrow{margin-top:18px;text-align:right}
+  .btn{background:transparent;border:1px solid var(--gold-soft);color:var(--gold);font-family:var(--sans);font-size:14px;letter-spacing:.15em;padding:11px 26px;border-radius:6px;cursor:pointer;transition:background .15s}
+  .btn:hover{background:rgba(200,169,110,.1)}
+  .btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .btn.solid{background:var(--gold);color:#1A1408;border-color:var(--gold);font-weight:700}
+  .btn.solid:hover{background:#D6B87C}
+
+  .result{text-align:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:36px 26px}
+  .gauge{width:190px;height:190px;margin:0 auto 18px;display:block}
+  .rtitle{font-family:var(--serif);font-size:24px;color:var(--gold);letter-spacing:.08em;margin-bottom:6px}
+  .rsub{color:var(--muted);font-size:13.5px;max-width:420px;margin:0 auto 22px}
+  .rstats{display:flex;justify-content:center;gap:36px;margin-bottom:26px;flex-wrap:wrap}
+  .rstats .stat .n{font-family:var(--serif);font-size:26px;color:var(--silver)}
+  .rstats .stat .l{font-size:11px;letter-spacing:.25em;color:var(--muted)}
+  .btnrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="brand">
+    <div class="eyebrow">Horology Academy</div>
+    <h1>ウォッチ・アカデミー</h1>
+    <div class="sub">腕時計のブランドと機構を学ぶ、大人の教養クイズ</div>
+    <div class="rule"></div>
+  </header>
+
+  <!-- START: category -->
+  <section class="screen active" id="scr-start">
+    <p class="lead">カテゴリーを選んでください。次の画面で難易度も選べます。</p>
+    <div class="cat-grid" id="catGrid"></div>
+  </section>
+
+  <!-- DIFFICULTY -->
+  <section class="screen" id="scr-diff">
+    <button class="backlink" id="backToCat">← カテゴリー選択に戻る</button>
+    <p class="lead" id="diffLead"></p>
+    <div class="diff-grid" id="diffGrid"></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="scr-quiz">
+    <div class="hud">
+      <div>
+        <div class="label">Question</div>
+        <div class="val" id="qNum">1 / 9</div>
+      </div>
+      <div class="reserve" aria-hidden="true"><div class="fill" id="reserveFill"></div></div>
+      <div style="text-align:right">
+        <div class="label">Streak</div>
+        <div class="val" id="streak">0</div>
+      </div>
+    </div>
+    <div class="qcard">
+      <div class="qcat"><span id="qCat"></span><span class="lvl" id="qLvl"></span></div>
+      <div class="qtext" id="qText"></div>
+      <div class="opts" id="opts"></div>
+      <div class="explain" id="explain">
+        <div class="verdict" id="verdict"></div>
+        <div class="etext" id="eText"></div>
+        <div class="nextrow"><button class="btn solid" id="nextBtn">次の問題へ</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="scr-result">
+    <div class="result">
+      <svg class="gauge" viewBox="0 0 200 200" id="gaugeSvg" role="img" aria-label="スコアゲージ">
+        <circle cx="100" cy="100" r="88" fill="none" stroke="#2B3648" stroke-width="6"/>
+        <circle id="gaugeArc" cx="100" cy="100" r="88" fill="none" stroke="#C8A96E" stroke-width="6"
+                stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="553"
+                transform="rotate(-90 100 100)" style="transition:stroke-dashoffset 1s ease"/>
+        <text id="gaugePct" x="100" y="96" text-anchor="middle" fill="#E9E7E1"
+              font-family="Shippori Mincho, serif" font-size="34">0%</text>
+        <text x="100" y="122" text-anchor="middle" fill="#8B95A5"
+              font-family="Zen Kaku Gothic New, sans-serif" font-size="10" letter-spacing="3">ACCURACY</text>
+      </svg>
+      <div class="rtitle" id="rankTitle"></div>
+      <p class="rsub" id="rankSub"></p>
+      <div class="rstats">
+        <div class="stat"><div class="n" id="rScore">0</div><div class="l">正解数</div></div>
+        <div class="stat"><div class="n" id="rBest">0</div><div class="l">最大連続正解</div></div>
+      </div>
+      <div class="btnrow">
+        <button class="btn solid" id="retryBtn">同じ条件でもう一度</button>
+        <button class="btn" id="homeBtn">カテゴリー選択へ</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// level: 1=初級 2=中級 3=上級
+const QUESTIONS = [
+// ============ brand ============
+{c:"brand",l:1,q:"1905年にロンドンでロレックスを創業した人物は？",
+ a:["ハンス・ウィルスドルフ","ルイ・カルティエ","ニコラス・G・ハイエック","フロレンティン・アリオスト・ジョーンズ"],k:0,
+ e:"ドイツ出身のハンス・ウィルスドルフがロンドンで創業し、後に本拠をスイス・ジュネーブへ移しました。「Rolex」はどの言語でも発音しやすいように考案された造語とされています。"},
+{c:"brand",l:2,q:"1755年の創業以来、一度も操業を途絶えさせていない最古の時計マニュファクチュールは？",
+ a:["ヴァシュロン・コンスタンタン","パテック フィリップ","ブレゲ","ゼニス"],k:0,
+ e:"ヴァシュロン・コンスタンタンは270年以上にわたり途切れることなく時計を作り続けています。ブランパンは1735年創業とより古いものの、操業に中断期間があります。"},
+{c:"brand",l:2,q:"ドイツの時計の聖地グラスヒュッテを本拠とする高級ブランドは？",
+ a:["A. ランゲ＆ゾーネ","IWC","ジャガー・ルクルト","オーデマ ピゲ"],k:0,
+ e:"A. ランゲ＆ゾーネは1845年創業。東西ドイツ統一後の1990年に復興し、ドイツ時計の最高峰と評されます。同じグラスヒュッテにはグラスヒュッテ・オリジナルやノモスもあります。"},
+{c:"brand",l:1,q:"いわゆる「世界三大高級時計（雲上ブランド）」に一般に含まれないのは？",
+ a:["ロレックス","パテック フィリップ","オーデマ ピゲ","ヴァシュロン・コンスタンタン"],k:0,
+ e:"三大ブランドはパテック フィリップ、オーデマ ピゲ、ヴァシュロン・コンスタンタン。ロレックスは知名度・人気で群を抜きますが、伝統的な格付けではこの3社が「雲上」とされます。"},
+{c:"brand",l:2,q:"IWCの本拠地があるスイスの町は？",
+ a:["シャフハウゼン","ジュネーブ","ビール／ビエンヌ","ル・ブラッシュ"],k:0,
+ e:"IWCは正式名を「インターナショナル・ウォッチ・カンパニー」といい、スイス東部のシャフハウゼンに本拠を置きます。多くのスイスブランドが西部に集中する中、珍しい立地です。"},
+{c:"brand",l:1,q:"セイコーが1969年に発売した、世界初の市販クォーツ腕時計は？",
+ a:["アストロン","ローレル","キングセイコー","マーベル"],k:0,
+ e:"クオーツアストロンは1969年12月に東京で発売。従来の機械式より桁違いに高精度で、世界の時計産業の構造を変える「クォーツショック」の引き金となりました。"},
+{c:"brand",l:1,q:"「落としても壊れない時計」を目指してG-SHOCKを開発したカシオの技術者は？",
+ a:["伊部菊雄","服部金太郎","樫尾忠雄","御手洗毅"],k:0,
+ e:"伊部菊雄氏が、父から贈られた時計を落として壊した経験から開発を発案。約200個の試作を経て1983年に初代DW-5000Cが誕生したと伝えられています。"},
+{c:"brand",l:1,q:"シチズン独自の光発電技術の名称は？",
+ a:["エコ・ドライブ","スプリングドライブ","キネティック","オートクォーツ"],k:0,
+ e:"エコ・ドライブは文字盤を透過した光で発電し、電池交換を基本的に不要にする技術。スプリングドライブはセイコー、キネティックもセイコーの技術なので混同に注意です。"},
+{c:"brand",l:2,q:"ロイヤル オークやノーチラスを手がけ「時計界のピカソ」とも称されたデザイナーは？",
+ a:["ジェラルド・ジェンタ","ジョージ・ダニエルズ","フランク・ミュラー","アブラアン＝ルイ・ブレゲ"],k:0,
+ e:"ジェラルド・ジェンタはラグジュアリースポーツウォッチというジャンルを確立した伝説的デザイナー。ブルガリの「オクト」の源流やIWC「インヂュニア」も彼の仕事です。"},
+{c:"brand",l:3,q:"独立時計師として知られ、同軸脱進機を発明しオメガに技術供与したイギリス人は？",
+ a:["ジョージ・ダニエルズ","ジェラルド・ジェンタ","フィリップ・デュフォー","フランソワ＝ポール・ジュルヌ"],k:0,
+ e:"ジョージ・ダニエルズは20世紀最高峰の独立時計師の一人。摩擦を減らす同軸脱進機を1970年代に考案し、1999年からオメガが実用化しました。"},
+{c:"brand",l:1,q:"1868年創業、ダイバーズウォッチ「フィフティ・ファゾムズ」で知られるスイスブランドは？",
+ a:["ブランパン","ロンジン","ゼニス","ティソ"],k:0,
+ e:"ブランパンは1953年発表の「フィフティ・ファゾムズ」で近代的ダイバーズウォッチの草分けとなりました。現存する最古のスイス時計ブランドの一つともいわれます。"},
+{c:"brand",l:1,q:"「Since 1832」を掲げ、鉄道時計の歴史でも知られるスイスブランドは？",
+ a:["ロンジン","オメガ","ゼニス","ラドー"],k:0,
+ e:"ロンジンは翼のついた砂時計のロゴで知られ、鉄道の公式時計やスポーツの計時を数多く手がけてきました。手頃な価格帯で高い完成度を持つブランドとして人気です。"},
+{c:"brand",l:2,q:"1839年創業、複雑機構と美術工芸を融合させることで知られるジュネーブのブランドは？",
+ a:["パテック フィリップ","ショパール","ピアジェ","ロジェ・デュブイ"],k:0,
+ e:"パテック フィリップは「ジュネーブシール」の伝統を体現するブランドの代表格。一族経営を貫き、パーペチュアルカレンダーやミニッツリピーターなど複雑機構を数多く手がけています。"},
+{c:"brand",l:2,q:"創業者一族の名を冠し、極薄ムーブメントの開発競争を長年リードしてきたブランドは？",
+ a:["ピアジェ","ブルガリ","ハリー・ウィンストン","ショパール"],k:0,
+ e:"ピアジェは1957年に手巻きで2mm、1976年には自動巻きで2.08mmという極薄ムーブメントを発表するなど、薄型化の技術で高く評価されてきました。"},
+{c:"brand",l:3,q:"1755年創業（諸説あり）で、精緻な紋章とモットーを大切にすることで知られるジュネーブのブランドは？",
+ a:["ヴァシュロン・コンスタンタン","ブランパン","オーデマ ピゲ","ブレゲ"],k:0,
+ e:"ヴァシュロン・コンスタンタンは「可能な限り最善を尽くせ、それは常に可能である」という創業者の言葉を今も掲げ、ジュネーブの老舗としての伝統を大切にしています。"},
+
+// ============ model ============
+{c:"model",l:1,q:"1953年に登場したロレックスの代表的ダイバーズウォッチは？",
+ a:["サブマリーナー","シードゥエラー","エクスプローラー","デイトナ"],k:0,
+ e:"サブマリーナーは回転ベゼルと高い防水性を備えた近代ダイバーズウォッチの原型。シードゥエラーはより深い飽和潜水向けの後発モデルです。"},
+{c:"model",l:1,q:"アポロ計画で宇宙飛行士とともに月面に到達した「ムーンウォッチ」は？",
+ a:["オメガ スピードマスター","ロレックス GMTマスター","ブライトリング ナビタイマー","セイコー スピードタイマー"],k:0,
+ e:"スピードマスターはNASAの過酷な公式テストに合格し、1969年のアポロ11号で月面へ。手巻きクロノグラフという構成は現行のムーンウォッチにも受け継がれています。"},
+{c:"model",l:2,q:"パテック フィリップが1976年に発表した、舷窓に着想を得たスポーツウォッチは？",
+ a:["ノーチラス","アクアノート","カラトラバ","ゴンドーロ"],k:0,
+ e:"ノーチラスはジェラルド・ジェンタのデザイン。丸みを帯びた八角形ベゼルが特徴で、現在は入手困難な人気モデルの代名詞になっています。アクアノートは1997年登場の弟分です。"},
+{c:"model",l:2,q:"1972年、オーデマ ピゲが発表した「高級ステンレススポーツウォッチ」の先駆けは？",
+ a:["ロイヤル オーク","ミレネリー","コード11.59","ジュール・オーデマ"],k:0,
+ e:"ロイヤル オークは八角形ベゼルと8本のビス、タペストリー模様の文字盤が特徴。当時、金無垢時計より高価なステンレス時計という発想は革命的でした。"},
+{c:"model",l:2,q:"1904年、カルティエが飛行家アルベルト・サントス＝デュモンのために製作した時計は？",
+ a:["サントス","タンク","パシャ","トーチュ"],k:0,
+ e:"操縦中に懐中時計を取り出せないという友人の悩みに応えて作られ、男性用腕時計の普及に大きく貢献しました。タンクは1917年、戦車の平面形に着想を得たモデルです。"},
+{c:"model",l:2,q:"ポロ競技の衝撃から風防を守るため、ケースが反転するジャガー・ルクルトのモデルは？",
+ a:["レベルソ","マスター・コントロール","ポラリス","アトモス"],k:0,
+ e:"レベルソ（1931年）は英国将校のポロでの要望から生まれたアール・デコの傑作。裏返した金属面に刻印やエナメル装飾を施す楽しみ方も定番です。"},
+{c:"model",l:2,q:"回転計算尺ベゼルで航空計算ができる、ブライトリングのパイロットウォッチは？",
+ a:["ナビタイマー","クロノマット","スーパーオーシャン","アベンジャー"],k:0,
+ e:"ナビタイマー（1952年）は燃料消費や速度の計算ができる回転計算尺を搭載。電子機器のない時代のパイロットの実用計器でした。"},
+{c:"model",l:2,q:"モータースポーツと縁が深い、タグ・ホイヤーのスクエアケース・クロノグラフは？",
+ a:["モナコ","カレラ","アクアレーサー","フォーミュラ1"],k:0,
+ e:"モナコ（1969年）は世界初の角形防水ケースをうたい、自動巻きクロノグラフ黎明期の記念碑的モデル。映画『栄光のル・マン』での着用でも知られます。"},
+{c:"model",l:1,q:"ロレックス GMTマスターは、もともとどの業界のために開発された？",
+ a:["航空業界","潜水業界","登山・探検","自動車レース"],k:0,
+ e:"1955年、大陸間路線を飛ぶパンアメリカン航空のパイロット向けに開発されました。赤青ベゼル（通称ペプシ）は昼夜を区別するためのものです。"},
+{c:"model",l:3,q:"世界初の完全自動巻きクロノグラフを巡る1969年の開発競争に参加していなかったのは？",
+ a:["ロンジン","ゼニス","ハイヤー（現タグ・ホイヤー）","セイコー"],k:0,
+ e:"1969年、ゼニス「エル・プリメロ」、ハイヤー／ブライトリング陣営の「キャリバー11」、セイコー「キャリバー6139」がほぼ同時に自動巻きクロノグラフを発表しました。ロンジンはこの競争には加わっていません。"},
+{c:"model",l:1,q:"三針＋日付というシンプルな構成で知られる、セイコーの機械式入門モデル群は？",
+ a:["セイコー5","グランドセイコー","プロスペックス","アストロン"],k:0,
+ e:"セイコー5は1963年に登場した、自動巻き・耐衝撃・防水など5つの特徴を備えた実用時計シリーズ。手頃な価格で機械式時計の入り口として世界的に人気です。"},
+{c:"model",l:2,q:"ロレックスのモデルの中で「デイト」表示を大きなレンズ（サイクロップ）で拡大表示するのが特徴のモデルは？",
+ a:["デイトジャスト","エアキング","ヨットマスター","ミルガウス"],k:0,
+ e:"デイトジャストは1945年発表で、ロレックス初の自動日付表示モデル。風防上のサイクロップレンズは1953年から追加された、視認性向上のための工夫です。"},
+{c:"model",l:2,q:"「ロイヤル オーク」と同じくジェラルド・ジェンタがデザインした、ブルガリの八角形スポーツウォッチは？",
+ a:["オクト","ディアゴノ","セルペンティ","アショーマ"],k:0,
+ e:"オクトはジェンタが最晩年に手がけたデザインをブルガリが発展させたモデル。多面体のケース構造が特徴的で、後にフィニッシモとして超薄型化も進みました。"},
+{c:"model",l:3,q:"1945年発表、ロレックス初の永久カレンダー機構を搭載した最高峰のドレスウォッチ「デイデイト」の通称の由来は？",
+ a:["曜日と日付を同時に表示することから","毎日調整が必要だったことから","2つの日付窓を持つことから","開発責任者の名前から"],k:0,
+ e:"デイデイトは文字盤上部の窓に曜日（Day）、3時位置に日付（Date）を表示する初のモデルで、通称の由来もそのままです。大統領ブレスレットとの組み合わせで「プレジデント」の愛称もあります。"},
+
+// ============ tech (機構) ============
+{c:"tech",l:1,q:"ストップウォッチ機能を備えた時計を指す言葉は？",
+ a:["クロノグラフ","クロノメーター","タキメーター","レギュレーター"],k:0,
+ e:"クロノグラフ＝ストップウォッチ機能、クロノメーター＝精度検定に合格した時計。似ていますが全くの別物で、時計好きが最初に覚える区別です。"},
+{c:"tech",l:1,q:"「クロノメーター」の正しい意味は？",
+ a:["公認機関の精度検定に合格した高精度時計","ストップウォッチ付きの時計","月齢を表示する時計","1000m防水の時計"],k:0,
+ e:"スイスではCOSC（スイス公認クロノメーター検定協会）が検定を実施し、機械式は日差-4〜+6秒などの基準をクリアする必要があります。"},
+{c:"tech",l:1,q:"自動巻き時計で、腕の動きを利用してゼンマイを巻き上げる半円形の部品は？",
+ a:["ローター（回転錘）","テンプ","香箱","アンクル"],k:0,
+ e:"ローターの回転がゼンマイを巻き上げます。透明な裏蓋（シースルーバック）から見える大きな半円形の部品がそれです。"},
+{c:"tech",l:1,q:"ゼンマイを最大まで巻いた状態から時計が止まるまでの持続時間を指す言葉は？",
+ a:["パワーリザーブ","トルクフロー","メインスプリング","ゼンマイ効率"],k:0,
+ e:"一般的な自動巻きで約40〜70時間、長いものは数日〜数週間に及びます。残量を表示する「パワーリザーブインジケーター」を備えるモデルもあります。"},
+{c:"tech",l:1,q:"機械式時計のゼンマイの力を蓄える、円筒形の部品は？",
+ a:["香箱（こうばこ）","カレンダー窓","ヒゲゼンマイ","竜頭"],k:0,
+ e:"香箱の中にゼンマイが渦巻き状に収められており、これがほどける力で歯車列全体を動かします。手巻き・自動巻きを問わず基本構造は共通です。"},
+{c:"tech",l:1,q:"時計のリューズ（竜頭）を引き出して回すと、通常できる操作は？",
+ a:["時刻合わせと日付合わせ","防水性能の調整","クロノグラフの計測開始","パワーリザーブの確認"],k:0,
+ e:"リューズは段階（ポジション）ごとに機能が変わり、最後まで引き出すと針合わせ、一段引くと日付早送りができる設計が一般的です。ねじ込み式リューズは防水性を高めます。"},
+{c:"tech",l:2,q:"重力による姿勢差の誤差を相殺するため、脱進機ごと回転させる複雑機構は？",
+ a:["トゥールビヨン","ミニッツリピーター","レトログラード","デッドビートセコンド"],k:0,
+ e:"トゥールビヨンは1801年にアブラアン＝ルイ・ブレゲが特許を取得。懐中時計時代の発明ですが、現在は高度な技術力の象徴として珍重されます。"},
+{c:"tech",l:2,q:"うるう年を含む月末の日付調整を自動で行うカレンダー機構は？",
+ a:["パーペチュアルカレンダー","アニュアルカレンダー","トリプルカレンダー","ビッグデイト"],k:0,
+ e:"パーペチュアルカレンダー（永久カレンダー）は理論上2100年まで修正不要。アニュアルカレンダーは2月末のみ年1回の修正が必要な簡易版です。"},
+{c:"tech",l:2,q:"チャイム音で時刻を知らせる、最高難度とされる複雑機構は？",
+ a:["ミニッツリピーター","ソヌリ・ア・トック","アラームウォッチ","ワールドタイム"],k:0,
+ e:"ミニッツリピーターはボタンやレバー操作で「時・15分・分」を音色の違いで打ち分けます。音作りは職人の耳と経験に頼る部分が大きい機構です。"},
+{c:"tech",l:2,q:"セイコー（グランドセイコー等）独自の、機械式の動力とクォーツの制御を融合した駆動機構は？",
+ a:["スプリングドライブ","ハイビート","キネティック","ツインクォーツ"],k:0,
+ e:"スプリングドライブは動力がゼンマイ、精度制御が水晶という独自方式。秒針が完全に滑らかに流れる運針が最大の特徴です。"},
+{c:"tech",l:2,q:"テンプに取り付けられ、その振動の速さを司る渦巻き状の極細のバネは？",
+ a:["ヒゲゼンマイ","主ゼンマイ","ガンギ車","コハゼ"],k:0,
+ e:"ヒゲゼンマイは髪の毛ほどの細さで、機械式時計の精度を左右する心臓部。近年は磁気に強いシリコン製ヒゲゼンマイも普及しています。"},
+{c:"tech",l:2,q:"時計の心臓部で、一定のリズムで往復振動しながら歯車の回転を制御する部品は？",
+ a:["テンプ（テンプ輪）","香箱車","丸穴車","日の裏車"],k:0,
+ e:"テンプはヒゲゼンマイと一体になって振動し、脱進機と連動して歯車列の回転速度を一定に保ちます。振動数（毎時振動数）が高いほど理論上は精度・耐衝撃性が向上します。"},
+{c:"tech",l:2,q:"歯車の回転をテンプの往復運動に変換する、機械式時計の要となる機構の総称は？",
+ a:["脱進機（エスケープメント）","調速機のみを指す言葉ではなく別の部品","カレンダー機構","自動巻き機構"],k:0,
+ e:"脱進機は香箱からの力を一定間隔で断続的にテンプへ伝える役割を持ち、現代の量産時計の多くは「アンクル脱進機」という方式を採用しています。"},
+{c:"tech",l:2,q:"衝撃で折れやすいテンプの軸（ホゾ）を保護する、ばね仕掛けの緩衝装置の代表的商標は？",
+ a:["インカブロック","マジックレバー","パラフレックス","ジャイロマックス"],k:0,
+ e:"インカブロックはテンプの軸受けを可動式にして衝撃を逃がす耐震装置。1930年代の発明で、現在も多くの機械式時計に採用されています。"},
+{c:"tech",l:2,q:"クロノグラフの作動方式のうち、精密だが製造コストが高い伝統的な方式は？",
+ a:["コラムホイール式","カム式","モジュール式","デジタル式"],k:0,
+ e:"コラムホイール式は円柱状の部品の切り欠きでレバーを制御する伝統方式で、操作感の良さから高級機に好まれます。カム式は部品点数が少なく量産向きです。"},
+{c:"tech",l:3,q:"1969年発表、ゼニスの自動巻きクロノグラフ「エル・プリメロ」の特徴的な振動数は？",
+ a:["毎時36,000振動（5Hz）","毎時28,800振動（4Hz）","毎時21,600振動（3Hz）","毎時18,000振動（2.5Hz）"],k:0,
+ e:"エル・プリメロは高振動により1/10秒単位の計測を実現し、「星の中の星」を意味する名を与えられました。高振動化は精度向上に有利な一方、部品の摩耗が課題となります。"},
+{c:"tech",l:3,q:"毎時28,800振動（1時間に28,800回）のテンプは、1秒間に何回振動する？",
+ a:["4回","2回","6回","8回"],k:0,
+ e:"28,800振動を3,600秒（1時間）で割ると8。往復1回＝2振動なので、周波数は8÷2＝4Hzとなります。多くの現代機械式ムーブメントがこの毎時28,800振動＝4Hzを採用しています。"},
+{c:"tech",l:3,q:"1970年代にオメガが実用化した、部品同士の摩擦を減らし潤滑油依存を下げる脱進機は？",
+ a:["コーアクシャル脱進機","デタント脱進機","シリンダー脱進機","デュプレックス脱進機"],k:0,
+ e:"コーアクシャル脱進機は同軸状に配置した複数の爪車で力を伝える方式で、ジョージ・ダニエルズが発明。摩擦の多い従来のアンクル脱進機に比べ、注油周期を延ばせるとされます。"},
+{c:"tech",l:3,q:"磁気の影響を受けにくく、近年ヒゲゼンマイや脱進機部品への採用が進む素材は？",
+ a:["シリコン（ケイ素）","チタン","セラミック","タングステン"],k:0,
+ e:"シリコン製部品は非磁性で軽量、摩擦係数も低いため注油が不要になる利点があります。ユリス・ナルダンやパテック フィリップなどが2000年代から先駆けて採用しました。"},
+{c:"tech",l:3,q:"香箱を複数搭載するなどしてトルクを安定させ、長時間精度を保つ設計思想を指す言葉は？",
+ a:["等時性（アイソクロニズム）の改善","逆行表示","トゥールビヨン効果","エルプリメロ方式"],k:0,
+ e:"等時性とは、ゼンマイの巻き上げ量にかかわらず振動周期を一定に保つ性質のこと。定力装置（コンスタントフォース）やダブル香箱はこれを高めるための工夫です。"},
+{c:"tech",l:3,q:"分針や日付表示が扇形の目盛りを飛んで瞬時に戻る、視覚的に特徴的な表示方式は？",
+ a:["レトログラード","ジャンピングアワー","パワーマティック","デッドビート"],k:0,
+ e:"レトログラード（跳ね返り式）は針が円弧状の目盛りの端まで進むと、一瞬で始点に戻る表示方式。専用のカム機構により実現されます。"},
+{c:"tech",l:3,q:"通常は連続的に動く秒針を、あえて1秒ごとに正確に1目盛りずつ動かす機構は？",
+ a:["デッドビート秒針（ジャンピングセコンド）","レトログラード秒針","フライングセコンド","トリプルカレンダー"],k:0,
+ e:"デッドビート秒針はクォーツ時計のような1秒刻みの動きを機械式で再現する機構。古くは天文観測用の精密時計（レギュレーター）にも使われました。"},
+{c:"tech",l:3,q:"セイコーが自動巻き機構で採用した、両方向のローター回転を効率よく巻き上げに変換する機構は？",
+ a:["マジックレバー","コーアクシャル方式","キネティック方式","トリプルカレンダー方式"],k:0,
+ e:"マジックレバーは1959年にセイコーが開発した自動巻き機構。シンプルな部品構成で高い巻き上げ効率を実現し、現在も同社の主力ムーブメントに使われています。"},
+{c:"tech",l:1,q:"時計の防水性能を示す「100m防水」などの表記が意味する、より正確な性質は？",
+ a:["静止した状態での耐水圧性能の目安","実際に100mまで潜水できる保証","水深による重さの耐性","1気圧＝約10mを示す単位"],k:0,
+ e:"「〇m防水」は静止状態でのテスト圧力を距離換算した目安で、実際の潜水を保証するものではありません。水泳程度は100m表記があれば一般的に問題ないとされますが、本格的なダイビングには「ダイバーズウォッチ」規格（ISO 6425等）に適合したモデルが必要です。"},
+{c:"tech",l:1,q:"文字盤に夜光塗料を用いる目的として最も近いものは？",
+ a:["暗所での視認性向上","防水性の強化","磁気の防止","精度の向上"],k:0,
+ e:"夜光塗料（ルミナス）は蓄光や発光の性質を利用し、暗闇でも針や目盛りを読めるようにするためのもの。ダイバーズウォッチやパイロットウォッチで特に重視されます。"},
+{c:"tech",l:2,q:"機械式時計が磁気を帯びると起こりやすい不具合は？",
+ a:["ヒゲゼンマイが張り付き大きく進むことがある","電池の消耗が早まる","防水パッキンが劣化する","針が逆回転する"],k:0,
+ e:"ヒゲゼンマイが磁化すると渦巻きの間隔が縮まって短絡し、テンプの振動が速くなって時計が大きく進むことがあります。対策として非磁性のシリコンヒゲゼンマイなどが使われます。"},
+{c:"tech",l:2,q:"手巻き時計で「時計を振って動かす」ことに意味がないのはなぜ？",
+ a:["手巻きにはローターが無く、竜頭を回して巻く構造だから","振ると精度が落ちるから","防水性能が下がるから","ゼンマイが逆に緩むから"],k:0,
+ e:"自動巻きはローターの回転でゼンマイを巻きますが、手巻きにはローターがなく、竜頭を手で回すことでのみ巻き上げます。振っても巻き上げ効果はありません。"},
+{c:"tech",l:3,q:"クロノグラフの積算計（トーターライザー）が、一般的に計測できない項目は？",
+ a:["気圧","秒","分","時"],k:0,
+ e:"標準的なクロノグラフは秒・分・時（またはそのいずれか）を積算表示できます。気圧を計測・表示する機能は通常クロノグラフには含まれません。"},
+{c:"tech",l:2,q:"ケースの中に小さなケースをもう一つ入れ、磁気の影響を遮断する伝統的な技法は？",
+ a:["インナーケース（軟鉄製の内側ケース）","ダブルバレル","スケルトン加工","二重風防"],k:0,
+ e:"軟鉄で内部を覆うインナーケース構造は磁力線を迂回させ、ムーブメントを磁気から守ります。ロレックス「ミルガウス」やIWC「インヂュニア」などの耐磁時計に使われる古典的な手法です。"},
+
+// ============ hist ============
+{c:"hist",l:1,q:"1970年代、安価で高精度なクォーツの台頭がスイス機械式時計産業を危機に陥れた出来事は？",
+ a:["クォーツショック","オイルショック","ウォッチバブル","ジュネーブ危機"],k:0,
+ e:"クォーツショック（クォーツ危機）でスイスの時計関連雇用は激減。1983年のスウォッチの成功と機械式の高級路線への転換で産業は復活しました。"},
+{c:"hist",l:2,q:"次のうち、スウォッチ グループの傘下ではないブランドは？",
+ a:["ロレックス","オメガ","ロンジン","ブレゲ"],k:0,
+ e:"ロレックスは財団が所有する独立企業です。スウォッチ グループはオメガ、ブレゲ、ロンジン、ティソなど多数を擁するスイス最大の時計グループです。"},
+{c:"hist",l:2,q:"次のうち、リシュモン グループに属するブランドは？",
+ a:["IWC","オメガ","タグ・ホイヤー","セイコー"],k:0,
+ e:"リシュモンはIWCのほかカルティエ、ジャガー・ルクルト、パネライ、ヴァシュロン・コンスタンタンなどを傘下に持ちます。タグ・ホイヤーはLVMH、オメガはスウォッチ グループです。"},
+{c:"hist",l:1,q:"腕時計が男性にも本格的に普及する大きなきっかけとなった出来事は？",
+ a:["第一次世界大戦","産業革命","万国博覧会","大陸横断鉄道の開通"],k:0,
+ e:"塹壕戦では懐中時計を取り出す余裕がなく、腕に着ける時計の実用性が証明されました。それまで腕時計は主に女性の装身具と見なされていました。"},
+{c:"hist",l:1,q:"1926年に発表された、世界初の防水腕時計として知られるロレックスのケースの名称は？",
+ a:["オイスター","パーペチュアル","サイクロップス","トリプロック"],k:0,
+ e:"「牡蠣のように密閉された」ケースという意味のオイスター。翌年、英仏海峡を泳いで渡った女性スイマーが着用し、その防水性が広く知られました。"},
+{c:"hist",l:2,q:"1953年のエベレスト初登頂の遠征と関連づけて発表されたロレックスのモデルは？",
+ a:["エクスプローラー","エアキング","ミルガウス","オイスターデイト"],k:0,
+ e:"ヒラリーとテンジンによる初登頂を成し遂げた遠征隊にロレックスが時計を提供したことにちなみ、同年「エクスプローラー」が誕生しました。"},
+{c:"hist",l:1,q:"1913年、日本初の腕時計「ローレル」を製造した会社は？",
+ a:["精工舎（セイコー）","シチズン時計","オリエント時計","高野精密工業"],k:0,
+ e:"服部金太郎が創業した精工舎が国産初の腕時計ローレルを製造。セイコーはその後、クォーツやスプリングドライブなど独自技術で世界をリードします。"},
+{c:"hist",l:2,q:"パネライがもともと精密機器や時計を供給していたのは？",
+ a:["イタリア海軍","フランス空軍","スイス山岳部隊","英国海兵隊"],k:0,
+ e:"フィレンツェのパネライはイタリア海軍の特殊潜水部隊に夜光計器や時計を供給。視認性の高い大型ケースの「ルミノール」「ラジオミール」はその系譜です。"},
+{c:"hist",l:1,q:"チューダー（TUDOR）はどのブランドが設立した姉妹ブランド？",
+ a:["ロレックス","オメガ","カルティエ","ブライトリング"],k:0,
+ e:"ハンス・ウィルスドルフがロレックスの品質をより手頃な価格で提供するために設立。近年は「ブラックベイ」シリーズなどで独自の人気を確立しています。"},
+{c:"hist",l:3,q:"1980年代、崩壊寸前だったスイス時計産業の再編を主導し、スウォッチ グループの礎を築いた人物は？",
+ a:["ニコラス・G・ハイエック","ハンス・ウィルスドルフ","ジャン＝クロード・ビバー","フィリップ・シュトルン"],k:0,
+ e:"ニコラス・G・ハイエックはASUAGとSSIHという経営難の2大企業グループの合併を主導し、樹脂製の安価な「スウォッチ」の大ヒットでスイス時計産業を蘇らせました。"},
+{c:"hist",l:1,q:"時計の精度を検定する国際的な機関COSCが置かれている国は？",
+ a:["スイス","フランス","ドイツ","イギリス"],k:0,
+ e:"COSC（スイス公認クロノメーター検定協会）はスイス国内で製造されたムーブメントの精度を検定する非営利団体で、認定に合格したものだけが「クロノメーター」を名乗れます。"},
+{c:"hist",l:2,q:"1969年に人類初の月面着陸を果たしたアポロ11号の船長は？",
+ a:["ニール・アームストロング","バズ・オルドリン","マイケル・コリンズ","ジョン・グレン"],k:0,
+ e:"ニール・アームストロングが人類初の月面歩行者となりました。同乗のバズ・オルドリンが着用していたオメガ スピードマスターが、後に「ムーンウォッチ」の愛称で広く知られるようになります。"},
+{c:"hist",l:2,q:"高級ブランドが近年、中古（セカンドハンド）市場の公式な取り込みを進めている主な理由として挙げられるのは？",
+ a:["真贋証明やブランド価値の維持のため","製造コスト削減のため","新作の販売数を減らすため","電池交換需要を増やすため"],k:0,
+ e:"パテック フィリップ セーフやロレックス サーティファイド・プレオウンドなど、ブランド公式の認定中古プログラムは、真贋保証と資産価値の管理を目的として近年広がっています。"},
+{c:"hist",l:1,q:"スマートウォッチの普及以降も、機械式高級時計市場が支持され続けている主な理由として一般的に語られるのは？",
+ a:["資産性や工芸品としての価値","バッテリーの持ちが良いから","操作が簡単だから","通知機能が優れているから"],k:0,
+ e:"機械式時計は実用の道具というより、伝統工芸や資産としての側面が評価される傾向にあります。中古市場でも価値が維持・上昇するモデルがあることも支持される理由の一つです。"}
+];
+
+const CATS = [
+  {id:"brand", name:"ブランドの基礎", desc:"創業者・本拠地・ブランドの系譜"},
+  {id:"model", name:"代表モデル", desc:"サブマリーナーからロイヤル オークまで"},
+  {id:"tech",  name:"機構と専門用語", desc:"脱進機、トゥールビヨン、振動数の話"},
+  {id:"hist",  name:"歴史とトリビア", desc:"クォーツショックと腕時計の物語"}
+];
+const CATNAME = Object.fromEntries(CATS.map(c=>[c.id,c.name]));
+
+const LEVELS = [
+  {id:1, crown:"I",   name:"初級",  desc:"時計の基本を楽しく確認"},
+  {id:2, crown:"II",  name:"中級",  desc:"少し踏み込んだ愛好家向け"},
+  {id:3, crown:"III", name:"上級",  desc:"数値や機構名まで問う専門編"},
+  {id:0, crown:"—",   name:"おまかせ（全レベル）", desc:"初級〜上級をランダムに出題"}
+];
+
+let pool=[], idx=0, score=0, streak=0, best=0, lastCat=null, lastLevel=null;
+
+const $ = id => document.getElementById(id);
+const show = id => {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+const shuffle = arr => {
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+};
+const LVLNAME = {1:"初級",2:"中級",3:"上級"};
+
+function buildStart(){
+  const grid=$('catGrid'); grid.innerHTML='';
+  CATS.forEach(c=>{
+    const n=QUESTIONS.filter(q=>q.c===c.id).length;
+    const b=document.createElement('button');
+    b.className='cat';
+    b.innerHTML=`<div class="cname">${c.name}</div><div class="cdesc">${c.desc}</div><div class="ccount">全 ${n} 問</div>`;
+    b.onclick=()=>openDifficulty(c.id);
+    grid.appendChild(b);
+  });
+  const mix=document.createElement('button');
+  mix.className='cat mix';
+  mix.innerHTML=`<div class="cname">総合ミックス</div><div class="cdesc">全カテゴリーからランダムに出題</div>`;
+  mix.onclick=()=>openDifficulty('mix');
+  grid.appendChild(mix);
+}
+
+function openDifficulty(catId){
+  lastCat=catId;
+  const base = catId==='mix' ? QUESTIONS : QUESTIONS.filter(q=>q.c===catId);
+  $('diffLead').textContent = catId==='mix'
+    ? '難易度を選んでください（総合ミックス）。'
+    : `難易度を選んでください（${CATNAME[catId]}）。`;
+  const grid=$('diffGrid'); grid.innerHTML='';
+  LEVELS.forEach(lv=>{
+    const n = lv.id===0 ? base.length : base.filter(q=>q.l===lv.id).length;
+    if(n===0) return;
+    const b=document.createElement('button');
+    b.className='diff';
+    b.innerHTML=`<span class="dcrown">${lv.crown}</span>
+      <span style="flex:1"><span class="dname">${lv.name}</span><div class="ddesc">${lv.desc}</div></span>
+      <span class="dcount">全 ${n} 問</span>`;
+    b.onclick=()=>start(catId, lv.id);
+    grid.appendChild(b);
+  });
+  show('scr-diff');
+}
+$('backToCat').onclick=()=>show('scr-start');
+
+function start(catId, level){
+  lastCat=catId; lastLevel=level;
+  let base = catId==='mix' ? QUESTIONS : QUESTIONS.filter(q=>q.c===catId);
+  if(level!==0) base = base.filter(q=>q.l===level);
+  const count = catId==='mix' ? Math.min(12, base.length) : base.length;
+  pool = shuffle(base).slice(0, count);
+  idx=0; score=0; streak=0; best=0;
+  show('scr-quiz');
+  render();
+}
+
+function render(){
+  const q=pool[idx];
+  $('qNum').textContent=`${idx+1} / ${pool.length}`;
+  $('reserveFill').style.width=`${(idx/pool.length)*100}%`;
+  $('streak').textContent=streak;
+  $('qCat').textContent=CATNAME[q.c];
+  $('qLvl').textContent=`・${LVLNAME[q.l]}`;
+  $('qText').textContent=q.q;
+  $('explain').classList.remove('show');
+
+  const order=shuffle(q.a.map((t,i)=>({t,i})));
+  const opts=$('opts'); opts.innerHTML='';
+  order.forEach((o,pos)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.innerHTML=`<span class="key">${'ABCD'[pos]}</span><span>${o.t}</span>`;
+    b.onclick=()=>answer(b,o.i===q.k,q);
+    opts.appendChild(b);
+  });
+}
+
+function answer(btn, ok, q){
+  document.querySelectorAll('.opt').forEach(b=>{
+    b.disabled=true;
+    const text=b.querySelectorAll('span')[1].textContent;
+    if(text===q.a[q.k]) b.classList.add('correct');
+    else if(b===btn) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  if(ok){score++;streak++;best=Math.max(best,streak);}else{streak=0;}
+  $('streak').textContent=streak;
+  $('verdict').textContent = ok ? '正解' : '不正解';
+  $('verdict').className = 'verdict ' + (ok?'ok':'ng');
+  $('eText').textContent = q.e;
+  $('nextBtn').textContent = idx===pool.length-1 ? '結果を見る' : '次の問題へ';
+  $('explain').classList.add('show');
+  $('reserveFill').style.width=`${((idx+1)/pool.length)*100}%`;
+  $('nextBtn').focus();
+}
+
+$('nextBtn').onclick=()=>{
+  if(idx<pool.length-1){idx++;render();}
+  else finish();
+};
+
+function finish(){
+  show('scr-result');
+  const pct=Math.round(score/pool.length*100);
+  const rank =
+    pct===100 ? {t:"マスター・ウォッチメーカー", s:"完璧です。時計店で店員より詳しく語れるレベル。次は上級や別カテゴリーで腕試しを。"} :
+    pct>=80  ? {t:"コレクター級", s:"かなりの知識量です。取りこぼした問題の解説を読めば、マスターは目前です。"} :
+    pct>=60  ? {t:"愛好家", s:"基礎はしっかり身についています。中級・上級にも挑戦してみてください。"} :
+    pct>=40  ? {t:"見習い", s:"良いスタートです。解説を読みながら繰り返すと、知識が一気に定着します。"} :
+               {t:"入門者", s:"ここからが本番です。まずは初級から順に挑戦してみてください。"};
+  $('rankTitle').textContent=rank.t;
+  $('rankSub').textContent=rank.s;
+  $('rScore').textContent=`${score} / ${pool.length}`;
+  $('rBest').textContent=best;
+  $('gaugePct').textContent=`${pct}%`;
+  const arc=$('gaugeArc');
+  arc.style.strokeDashoffset=553;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    arc.style.strokeDashoffset=553*(1-pct/100);
+  }));
+}
+
+$('retryBtn').onclick=()=>start(lastCat, lastLevel);
+$('homeBtn').onclick=()=>show('scr-start');
+
+buildStart();
+</script>
+</body>
+</html>
